@@ -8,3 +8,5 @@ git pull 拉取最新的
 git add . 将所有东西加进去
 git commit -m "这次加了些啥"
 git push 上传
+
+文件分块写，怕有问题加分支
