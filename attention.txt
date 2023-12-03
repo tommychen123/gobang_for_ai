@@ -10,3 +10,4 @@ git commit -m "这次加了些啥"
 git push 上传
 
 文件分块写，怕有问题加分支
+pipreqs . --encoding=utf8 --force

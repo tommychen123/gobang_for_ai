@@ -1,3 +1,6 @@
+"""
+该部分主要实现了棋盘的有关绘制与运行
+"""
 from enum import IntEnum
 import pygame
 from pygame.locals import *
@@ -18,8 +21,9 @@ BUTTON_HEIGHT = 50
 SCREEN_WIDTH = MAP_WIDTH + INFO_WIDTH
 SCREEN_HEIGHT = MAP_HEIGHT
 
+
 # 地图绘制模块
-class MAP_ENTRY_TYPE(IntEnum):
+class MAP_ENTRY_TYPE(IntEnum):#枚举
 	MAP_EMPTY = 0,# 无人下
 	MAP_PLAYER_ONE = 1,# 玩家一，执白
 	MAP_PLAYER_TWO = 2,# 玩家二，执黑
@@ -63,6 +67,7 @@ class Map():  # 地图类
 	
 	def isEmpty(self, x, y):# 当前格子是否已经有棋子
 		return (self.map[y][x] == 0)
+		
 	def click(self, x, y, type):  # 点击的下棋动作
 		self.map[y][x] = type.value# 下棋
 		self.steps.append((x,y))# 记录步骤信息

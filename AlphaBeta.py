@@ -1,9 +1,14 @@
+"""
+该函数主体实现了α-β剪枝算法的五子棋AI
+主体定义了一个类，详见class AlphaBeta()的各个函数的简介。
+"""
 from GameMap import *
 from enum import IntEnum
 from random import randint
 import time
 
 AI_SEARCH_DEPTH = 2
+
 
 class CHESS_TYPE(IntEnum):
 	NONE = 0,
@@ -26,13 +31,15 @@ SCORE_MIN = -1 * SCORE_MAX
 SCORE_FIVE = 10000
 
 class AlphaBeta():
+	#初始化函数，输入：chess_len,对该类中的len，record,count，score进行初始化
+	#len：棋盘长度（正方形） record：棋盘上的记录
 	def __init__(self, chess_len):
 		self.len = chess_len
 		# [horizon, vertical, left diagonal, right diagonal]
 		self.record = [[[0,0,0,0] for x in range(chess_len)] for y in range(chess_len)]
 		self.count = [[0 for x in range(CHESS_TYPE_NUM)] for i in range(2)]
 		self.pos_score = [[(7 - max(abs(x - 7), abs(y - 7))) for x in range(chess_len)] for y in range(chess_len)]
-
+	#清零record和count
 	def reset(self):
 		for y in range(self.len):
 			for x in range(self.len):

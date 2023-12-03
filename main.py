@@ -1,4 +1,6 @@
 import pygame
+#import easygui
+from tkinter import messagebox
 from pygame.locals import *
 from GameMap import *
 from AlphaBeta import *
@@ -45,6 +47,7 @@ class StartWhiteButton(Button): # 白方
 			game.start()
 			game.winner = None
 			game.multiple = False
+			game.mode=0
 			self.msg_image = self.font.render(self.text, True, self.text_color, self.button_color[1])
 			self.enable = False
 			return True
@@ -64,6 +67,7 @@ class StartBlackButton(Button): # 黑方
 			game.start()
 			game.winner = None
 			game.multiple = False
+			game.mode=1
 			game.useAI = True
 			self.msg_image = self.font.render(self.text, True, self.text_color, self.button_color[1])
 			self.enable = False
@@ -82,6 +86,7 @@ class GiveupButton(Button):  # 投降按钮 任何模式都能用
 	def click(self, game): # 结束游戏，判断赢家
 		if self.enable:
 			game.is_play = False
+			pygame.mixer.music.stop()
 			if game.winner is None:
 				game.winner = game.map.reverseTurn(game.player)
 			self.msg_image = self.font.render(self.text, True, self.text_color, self.button_color[1])
@@ -103,6 +108,7 @@ class MultiStartButton(Button):  # 开始按钮（多人游戏）
             game.start()
             game.winner = None
             game.multiple=True
+            game.mode=2
             self.msg_image = self.font.render(self.text, True, self.text_color, self.button_color[1])
             self.enable = False
             return True
@@ -116,6 +122,10 @@ class MultiStartButton(Button):  # 开始按钮（多人游戏）
 class Game():
 	def __init__(self, caption):
 		pygame.init()
+		pygame.mixer.init()
+		messagebox.showinfo( '说明','游戏说明\n 规则：基本五子棋规则\n 模式：AI对弈，人人对弈')
+		self.play_chess_sound = pygame.mixer.Sound('playchess.wav') #落子音效
+		self.play_chess_sound.set_volume(2)
 		self.screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
 		pygame.display.set_caption(caption)
 		self.clock = pygame.time.Clock()
@@ -125,7 +135,7 @@ class Game():
 		self.buttons.append(MultiStartButton(self.screen, 'PVP', MAP_WIDTH + 30, 3*(BUTTON_HEIGHT + 45)))
 		self.buttons.append(GiveupButton(self.screen, 'Give Up', MAP_WIDTH + 30, 4*(BUTTON_HEIGHT + 45)))
 		self.is_play = False
-
+		self.mode = 0
 		self.map = Map(CHESS_LEN, CHESS_LEN)
 		self.player = MAP_ENTRY_TYPE.MAP_PLAYER_ONE
 		self.action = None
@@ -136,6 +146,9 @@ class Game():
 	
 	def start(self):
 		self.is_play = True
+		pygame.mixer.music.load('BGM.mp3')
+		pygame.mixer.music.set_volume(0.5)
+		pygame.mixer.music.play()
 		self.player = MAP_ENTRY_TYPE.MAP_PLAYER_ONE
 		self.map.reset()
 
@@ -149,8 +162,8 @@ class Game():
 		for button in self.buttons:# 画按钮
 			button.draw()
 		
-		if self.is_play and not self.isOver():
-			if self.useAI:
+		if self.is_play and self.winner == None:
+			if self.useAI and not self.multiple:
 				x, y = self.AI.findBestChess(self.map.map, self.player)
 				self.checkClick(x, y, True)
 				self.useAI = False
@@ -159,10 +172,10 @@ class Game():
 				self.checkClick(self.action[0], self.action[1])
 				self.action = None
 			
-			if not self.isOver():
+			if self.winner == None:
 				self.changeMouseShow()
 			
-		if self.isOver():
+		if self.winner != None:
 			self.showWinner()
 
 		self.map.drawBackground(self.screen)
@@ -184,21 +197,28 @@ class Game():
 		self.map.click(x, y, self.player)
 		if self.AI.isWin(self.map.map, self.player):
 			self.winner = self.player
-			self.click_button(self.buttons[1])
+			pygame.mixer.music.stop()
+			self.click_button(self.buttons[self.mode])
+			if self.winner == MAP_ENTRY_TYPE.MAP_PLAYER_ONE:
+				messagebox.showinfo( '游戏结束','白方胜利！')
+			else:
+				messagebox.showinfo( '游戏结束','黑方胜利！')
 		else:	
 			self.player = self.map.reverseTurn(self.player)
 			if not isAI:	
 				self.useAI = True
 	
 	def mouseClick(self, map_x, map_y):# 处理下棋动作
-		if self.is_play and self.map.isInMap(map_x, map_y) and not self.isOver():
+		if self.is_play and self.map.isInMap(map_x, map_y) and self.winner == None:
 			x, y = self.map.MapPosToIndex(map_x, map_y)
+			self.play_chess_sound.play()
 			if self.map.isEmpty(x, y):
 				self.action = (x, y)
-	
+	'''
 	def isOver(self): # 中断条件
+		print(self.winner)
 		return self.winner is not None
-
+	'''
 	def showWinner(self):# 输出胜者
 		def showFont(screen, text, location_x, locaiton_y, height):
 			font = pygame.font.SysFont(None, height)
