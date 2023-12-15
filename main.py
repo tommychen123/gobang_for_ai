@@ -5,8 +5,9 @@ from pygame.locals import *
 from GameMap import *
 from AlphaBeta import *
 from EasyAI import *
-
-
+from MyMnistWindow import *
+from DQN_AI import *
+from EasyAI import *
 class Button():
 	def __init__(self, screen, text, x, y, color, enable):
 		self.screen = screen
@@ -99,6 +100,7 @@ class GiveupButton(Button):  # 投降按钮 任何模式都能用
 			self.msg_image = self.font.render(self.text, True, self.text_color, self.button_color[0])
 			self.enable = True
 
+
 class MultiStartButton(Button):  # 开始按钮（多人游戏）
     def __init__(self, screen, text, x, y):  # 构造函数
         super().__init__(screen, text, x, y, [(230, 67, 64), (236, 139, 137)], True)
@@ -108,7 +110,7 @@ class MultiStartButton(Button):  # 开始按钮（多人游戏）
             game.start()
             game.winner = None
             game.multiple=True
-            game.mode=2
+            game.mode= 2
             self.msg_image = self.font.render(self.text, True, self.text_color, self.button_color[1])
             self.enable = False
             return True
@@ -119,12 +121,54 @@ class MultiStartButton(Button):  # 开始按钮（多人游戏）
             self.msg_image = self.font.render(self.text, True, self.text_color, self.button_color[0])
             self.enable = True
 
+class WritingButton(Button):  # 手写按钮
+	def __init__(self, screen, text, x, y):
+		super().__init__(screen, text, x, y, [(15, 151, 50),(133, 130, 201)], False) 
+		
+	def click(self, game): # 结束游戏，判断赢家
+		if self.enable:
+			x,y=handwriting_result()
+			if(x<15 and x>-1 and y<15 and y>-1 and game.map.isEmpty(x, y)):
+				game.action = (x,y)
+				#game.checkClick(x, y, True)
+			else:
+				messagebox.showinfo( '错误','输入有误重新输入')
+			self.enable = False
+			return True
+		return False
+
+	def unclick(self):
+		if not self.enable:
+			self.msg_image = self.font.render(self.text, True, self.text_color, self.button_color[0])
+			self.enable = True
+
+class Consult_AI_Button(Button):  # AI帮手
+	def __init__(self, screen, text, x, y):
+		super().__init__(screen, text, x, y, [(100, 101, 200),(21, 10, 21)], False) 
+		
+	def click(self, game): #给出一个提示
+		use_model = False
+		if self.enable:
+			if(use_model == True):
+				x,y = DQN_AI_value(game.map.map,game.player)
+			else:
+				AI = EasyAI(15)
+				x,y = AI.findBestChess(game.map.map,game.player)
+			messagebox.showinfo( '提示','建议下在('+str(x)+','+str(y)+')处')
+			return True
+		return False
+
+	def unclick(self):
+		if not self.enable:
+			self.msg_image = self.font.render(self.text, True, self.text_color, self.button_color[0])
+			self.enable = True
+
 class Game():
 	def __init__(self, caption):
 		pygame.init()
 		pygame.mixer.init()
 		messagebox.showinfo( '说明','游戏说明\n 规则：基本五子棋规则\n 模式：AI对弈，人人对弈')
-		self.play_chess_sound = pygame.mixer.Sound('playchess.wav') #落子音效
+		self.play_chess_sound = pygame.mixer.Sound('./Music/playchess.wav') #落子音效
 		self.play_chess_sound.set_volume(2)
 		self.screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
 		pygame.display.set_caption(caption)
@@ -134,6 +178,8 @@ class Game():
 		self.buttons.append(StartBlackButton(self.screen, 'choose Black', MAP_WIDTH + 30, 2*(BUTTON_HEIGHT + 45)))
 		self.buttons.append(MultiStartButton(self.screen, 'PVP', MAP_WIDTH + 30, 3*(BUTTON_HEIGHT + 45)))
 		self.buttons.append(GiveupButton(self.screen, 'Give Up', MAP_WIDTH + 30, 4*(BUTTON_HEIGHT + 45)))
+		self.buttons.append(WritingButton(self.screen, 'Writing', MAP_WIDTH + 30, 5*(BUTTON_HEIGHT + 45)))
+		self.buttons.append(Consult_AI_Button(self.screen, 'Consult AI', MAP_WIDTH + 30, 6*(BUTTON_HEIGHT + 45)))
 		self.is_play = False
 		self.mode = 0
 		self.map = Map(CHESS_LEN, CHESS_LEN)
@@ -146,7 +192,7 @@ class Game():
 	
 	def start(self):
 		self.is_play = True
-		pygame.mixer.music.load('BGM.mp3')
+		pygame.mixer.music.load('./Music/BGM.mp3')
 		pygame.mixer.music.set_volume(0.5)
 		pygame.mixer.music.play()
 		self.player = MAP_ENTRY_TYPE.MAP_PLAYER_ONE

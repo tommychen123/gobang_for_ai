@@ -70,6 +70,7 @@ class Map():  # 地图类
 		
 	def click(self, x, y, type):  # 点击的下棋动作
 		self.map[y][x] = type.value# 下棋
+		print(self.map)
 		self.steps.append((x,y))# 记录步骤信息
 
 	def drawChess(self, screen):# 绘制棋子
