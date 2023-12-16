@@ -1,10 +1,8 @@
 '''
     功能：
         利用训练好的模型，进行实时手写体识别
-    作者：yuhansgg
-    博客: https://blog.csdn.net/u011389706
-    日期: 2018/08/06
 '''
+
 import tensorflow.compat.v1 as tf
 import sys
 from PyQt5.QtWidgets import QApplication
@@ -13,10 +11,12 @@ from PyQt5.QtGui import (QPainter, QPen, QFont)
 from PyQt5.QtCore import Qt
 from PIL import ImageGrab, Image
 
-#采用tensorflow1.x版本
+# 采用tensorflow1.x版本
 tf.compat.v1.disable_eager_execution()
 Window_width = 284
 Window_height = 330
+
+
 class MyMnistWindow(QWidget):
 
     def __init__(self):
@@ -25,12 +25,12 @@ class MyMnistWindow(QWidget):
         self.resize(Window_width, Window_height)  # resize设置宽高
         self.move(100, 100)    # move设置位置
         self.setWindowFlags(Qt.FramelessWindowHint)  # 窗体无边框
-        #setMouseTracking设置为False，否则不按下鼠标时也会跟踪鼠标事件
+        # setMouseTracking设置为False，否则不按下鼠标时也会跟踪鼠标事件
         self.setMouseTracking(False)
 
         self.window_x = 0
-        self.window_y = 0 #记录窗口的左上顶点
-        self.pos_xy = []  #保存鼠标移动过的点
+        self.window_y = 0  # 记录窗口的左上顶点
+        self.pos_xy = []  # 保存鼠标移动过的点
 
         # 添加一系列控件
         self.label_draw = QLabel('', self)
@@ -62,17 +62,16 @@ class MyMnistWindow(QWidget):
 
         self.result = 0
 
-    def move_to_xy(self,x,y):
+    def move_to_xy(self, x, y):
         self.window_x = x
         self.window_y = y
-        self.move(x,y)
+        self.move(x, y)
 
     def paintEvent(self, event):
         painter = QPainter()
         painter.begin(self)
         pen = QPen(Qt.black, 30, Qt.SolidLine)
         painter.setPen(pen)
-
         '''
             首先判断pos_xy列表中是不是至少有两个点了
             然后将pos_xy中第一个点赋值给point_start
@@ -102,7 +101,8 @@ class MyMnistWindow(QWidget):
                     point_start = point_end
                     continue
 
-                painter.drawLine(point_start[0], point_start[1], point_end[0], point_end[1])
+                painter.drawLine(
+                    point_start[0], point_start[1], point_end[0], point_end[1])
                 point_start = point_end
         painter.end()
 
@@ -112,9 +112,9 @@ class MyMnistWindow(QWidget):
             调用update()函数在这里相当于调用paintEvent()函数
             每次update()时，之前调用的paintEvent()留下的痕迹都会清空
         '''
-        #中间变量pos_tmp提取当前点
+        # 中间变量pos_tmp提取当前点
         pos_tmp = (event.pos().x(), event.pos().y())
-        #pos_tmp添加到self.pos_xy中
+        # pos_tmp添加到self.pos_xy中
         self.pos_xy.append(pos_tmp)
 
         self.update()
@@ -132,7 +132,8 @@ class MyMnistWindow(QWidget):
         self.update()
 
     def btn_recognize_on_clicked(self):
-        bbox = (self.window_x + 4, self.window_y + 4, self.window_x + Window_width - 4, self.window_y + Window_width - 4)
+        bbox = (self.window_x + 4, self.window_y + 4, self.window_x +
+                Window_width - 4, self.window_y + Window_width - 4)
         im = ImageGrab.grab(bbox)    # 截屏，手写数字部分
         im = im.resize((28, 28), Image.ANTIALIAS)  # 将截图转换成 28 * 28 像素
 
@@ -156,11 +157,12 @@ class MyMnistWindow(QWidget):
         tva = [(255 - x) * 1.0 / 255.0 for x in tv]  # 转换像素范围到[0 1], 0是纯白 1是纯黑
 
         init = tf.global_variables_initializer()
-        saver = tf.train.Saver  # 不带括号
+        saver = tf.train.Saver
 
         with tf.Session() as sess:
             sess.run(init)
-            saver = tf.train.import_meta_graph('./HandWriting/minst_cnn_model.ckpt.meta')  # 载入模型结构
+            saver = tf.train.import_meta_graph(
+                './HandWriting/minst_cnn_model.ckpt.meta')  # 载入模型结构
             saver.restore(sess, './HandWriting/minst_cnn_model.ckpt')  # 载入模型参数
 
             graph = tf.get_default_graph()  # 加载计算图
@@ -169,25 +171,29 @@ class MyMnistWindow(QWidget):
             y_conv = graph.get_tensor_by_name("y_conv:0")  # 关键的一句  从模型中读取占位符变量
 
             prediction = tf.argmax(y_conv, 1)
-            predint = prediction.eval(feed_dict={x: [tva], keep_prob: 1.0}, session=sess)  # feed_dict输入数据给placeholder占位符
+            # feed_dict输入数据给placeholder占位符
+            predint = prediction.eval(
+                feed_dict={x: [tva], keep_prob: 1.0}, session=sess)
             print(predint[0])
         return predint[0]
 
+
 def handwriting_result():
     app = QApplication(sys.argv)
+    # 四个手写识别框依次识别
     mymnist_1 = MyMnistWindow()
-    mymnist_1.move_to_xy(100,100)
+    mymnist_1.move_to_xy(100, 100)
     mymnist_1.show()
     mymnist_2 = MyMnistWindow()
-    mymnist_2.move_to_xy(100+Window_width,100)
+    mymnist_2.move_to_xy(100+Window_width, 100)
     mymnist_2.show()
     mymnist_3 = MyMnistWindow()
-    mymnist_3.move_to_xy(100+Window_width*2,100)
+    mymnist_3.move_to_xy(100+Window_width*2, 100)
     mymnist_3.show()
     mymnist_4 = MyMnistWindow()
-    mymnist_4.move_to_xy(100+Window_width*3,100)
+    mymnist_4.move_to_xy(100+Window_width*3, 100)
     mymnist_4.show()
     app.exec_()
-    x_coor = mymnist_1.result*10+mymnist_2.result
+    x_coor = mymnist_1.result*10+mymnist_2.result  # 识别结果运算成坐标
     y_coor = mymnist_3.result*10+mymnist_4.result
-    return x_coor,y_coor
+    return x_coor, y_coor

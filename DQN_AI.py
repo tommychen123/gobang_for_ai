@@ -1,5 +1,7 @@
-#将棋盘状态转换为可供模型分析的状态
-
+'''
+    功能：
+        将棋盘状态转换为可供模型分析的状态
+'''
 
 from ChessBoard import ChessBoard
 import os
@@ -81,10 +83,6 @@ class DQN():
         W2 = self.weight_variable([5*5*16+1, 225])
         b2 = self.bias_variable([1, 225])
 
-        # 输入层
-        # self.state_input = tf.placeholder("float", [None, self.state_dim])
-        # self.turn = tf.placeholder("float", [None, 1])
-
         y0 = tf.reshape(self.state_input, [-1, 15, 15, 1])
         # 第一卷积层
         h1 = tf.nn.relu(self.conv2d(y0, W1) + b1)
@@ -154,8 +152,6 @@ class DQN():
 
         Q_value_batch = self.sess.run(self.Q_value, feed_dict={
             self.state_input: next_state_batch, self.turn: next_state_batch_turn})
-        # Q_value_batch = self.sess.run(self.targetQ_value, feed_dict={
-        #    self.state_input: next_state_batch[:, 0], self.turn: next_state_batch[:, 1]})
 
         # Q的值 Q = γ * max(Q')
         for i in range(0, BATCH_SIZE):
@@ -238,7 +234,7 @@ class DQN():
         path = saver.save(self.sess, 'mnist_model.ckpt')
         print(f"Model saved at {save_path}")
 
-    def test_model(self,board_state,who_to_play):
+    def test_model(self, board_state, who_to_play):
         self.saver.restore(self.sess, './DQN/mnist_model.ckpt')
         print('Variables restored.')
         Q_value = self.sess.run(self.Q_value, feed_dict={
@@ -252,26 +248,27 @@ class DQN():
             else:  # 有棋子，不可以落子
                 Q_value[i] = min_v
         self.sess = tf.Session()
-        return Q_value,np.argmax(Q_value)
+        return Q_value, np.argmax(Q_value)
 
-def DQN_AI_value(input_board,player):
+
+def DQN_AI_value(input_board, player):
     test_board = input_board
     size = 15
     board = np.zeros([15, 15])
     for i in range(size):
         for j in range(size):
-            if(test_board[i][j] == 0): #空的是0
+            if (test_board[i][j] == 0):  # 空的是0
                 board[i][j] = 2
-            elif(test_board[i][j] == 1): #白是1
+            elif (test_board[i][j] == 1):  # 白是1
                 board[i][j] = 1
-            elif(test_board[i][j] == 2): #黑是2
+            elif (test_board[i][j] == 2):  # 黑是2
                 board[i][j] = 0
-    data = np.reshape(board, [-1])  #将棋盘变为模型训练的输入参数
+    data = np.reshape(board, [-1])  # 将棋盘变为模型训练的输入参数
     camp = np.zeros([1])
-    camp[0] = player #轮到白是1 轮到黑是-1
+    camp[0] = player  # 轮到白是1 轮到黑是-1
     agent = DQN()  # 创建网络对象
     agent.copy()  # 拷贝Q网络参数到targetQ
-    Q_val,where_to_drop = agent.test_model(data,camp)
+    Q_val, where_to_drop = agent.test_model(data, camp)
     hang = int(where_to_drop/15)
     lie = int(where_to_drop % 15)
-    return hang,lie
+    return hang, lie

@@ -1,9 +1,12 @@
-"""
-该部分主要实现了棋盘的有关绘制与运行
-"""
+'''
+    功能：
+        该部分主要实现了棋盘的有关绘制与运行
+'''
+
+from pygame.locals import *
 from enum import IntEnum
 import pygame
-from pygame.locals import *
+pygame.init()
 
 GAME_VERSION = 'V1.0'
 
@@ -23,109 +26,148 @@ SCREEN_HEIGHT = MAP_HEIGHT
 
 
 # 地图绘制模块
-class MAP_ENTRY_TYPE(IntEnum):#枚举
-	MAP_EMPTY = 0,# 无人下
-	MAP_PLAYER_ONE = 1,# 玩家一，执白
-	MAP_PLAYER_TWO = 2,# 玩家二，执黑
-	MAP_NONE = 3, # out of map range
-	
+class MAP_ENTRY_TYPE(IntEnum):  # 枚举
+    MAP_EMPTY = 0,  # 无人下
+    MAP_PLAYER_ONE = 1,  # 玩家一，执白
+    MAP_PLAYER_TWO = 2,  # 玩家二，执黑
+    MAP_NONE = 3,  # 超出棋盘边界
+
+
 class Map():  # 地图类
-	def __init__(self, width, height):
-		self.width = width
-		self.height = height
-		self.map = [[0 for x in range(self.width)] for y in range(self.height)] # 存储棋盘的二维数组
-		self.steps = []# 记录步骤先后
-	
-	def reset(self): # 重置棋盘
-		for y in range(self.height):
-			for x in range(self.width):
-				self.map[y][x] = 0
-		self.steps = []
-	
-	def reverseTurn(self, turn): # 进入下一回合，交换下棋人
-		if turn == MAP_ENTRY_TYPE.MAP_PLAYER_ONE:
-			return MAP_ENTRY_TYPE.MAP_PLAYER_TWO
-		else:
-			return MAP_ENTRY_TYPE.MAP_PLAYER_ONE
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        self.map = [[0 for x in range(self.width)]
+                    for y in range(self.height)]  # 存储棋盘的二维数组
+        self.steps = []  # 记录步骤先后
 
-	def getMapUnitRect(self, x, y):# 输入下标，返回具体位置
-		map_x = x * REC_SIZE
-		map_y = y * REC_SIZE
-		
-		return (map_x, map_y, REC_SIZE, REC_SIZE)# 返回位置信息
-	
-	def MapPosToIndex(self, map_x, map_y):# 输入具体位置，返回下标
-		x = map_x // REC_SIZE
-		y = map_y // REC_SIZE		
-		return (x, y)
-	
-	def isInMap(self, map_x, map_y):# 是否在有效范围内
-		if (map_x <= 0 or map_x >= MAP_WIDTH or 
-			map_y <= 0 or map_y >= MAP_HEIGHT):
-			return False
-		return True
-	
-	def isEmpty(self, x, y):# 当前格子是否已经有棋子
-		return (self.map[y][x] == 0)
-		
-	def click(self, x, y, type):  # 点击的下棋动作
-		self.map[y][x] = type.value# 下棋
-		print(self.map)
-		self.steps.append((x,y))# 记录步骤信息
+    def reset(self):  # 重置棋盘
+        for y in range(self.height):
+            for x in range(self.width):
+                self.map[y][x] = 0
+        self.steps = []
 
-	def drawChess(self, screen):# 绘制棋子
-		player_one = (255, 251, 240)
-		player_two = (88, 87, 86)
-		player_color = [player_one, player_two]
-		
-		font = pygame.font.SysFont(None, REC_SIZE*2//3)
-		for i in range(len(self.steps)):
-			x, y = self.steps[i]
-			map_x, map_y, width, height = self.getMapUnitRect(x, y)
-			pos, radius = (map_x + width//2, map_y + height//2), CHESS_RADIUS
-			turn = self.map[y][x]
-			if turn == 1:
-				op_turn = 2
-			else:
-				op_turn = 1
-			pygame.draw.circle(screen, player_color[turn-1], pos, radius)
-			
-			msg_image = font.render(str(i), True, player_color[op_turn-1], player_color[turn-1])
-			msg_image_rect = msg_image.get_rect()
-			msg_image_rect.center = pos
-			screen.blit(msg_image, msg_image_rect)
-			
-		
-		if len(self.steps) > 0:
-			last_pos = self.steps[-1]
-			map_x, map_y, width, height = self.getMapUnitRect(last_pos[0], last_pos[1])
-			purple_color = (255, 0, 255)
-			point_list = [(map_x, map_y), (map_x + width, map_y), 
-					(map_x + width, map_y + height), (map_x, map_y + height)]
-			pygame.draw.lines(screen, purple_color, True, point_list, 1)
-			
-	def drawBackground(self, screen): # 画棋盘
-		color = (0, 0, 0)
-		for y in range(self.height):
-			# draw a horizontal line
-			start_pos, end_pos= (REC_SIZE//2, REC_SIZE//2 + REC_SIZE * y), (MAP_WIDTH - REC_SIZE//2, REC_SIZE//2 + REC_SIZE * y)
-			if y == (self.height)//2:
-				width = 2
-			else:
-				width = 1
-			pygame.draw.line(screen, color, start_pos, end_pos, width)
-		
-		for x in range(self.width):
-			# draw a horizontal line
-			start_pos, end_pos= (REC_SIZE//2 + REC_SIZE * x, REC_SIZE//2), (REC_SIZE//2 + REC_SIZE * x, MAP_HEIGHT - REC_SIZE//2)
-			if x == (self.width)//2:
-				width = 2
-			else:
-				width = 1
-			pygame.draw.line(screen, color, start_pos, end_pos, width)
-				
-		
-		rec_size = 8
-		pos = [(3,3), (11,3), (3, 11), (11,11), (7,7)]
-		for (x, y) in pos:
-			pygame.draw.rect(screen, color, (REC_SIZE//2 + x * REC_SIZE - rec_size//2, REC_SIZE//2 + y * REC_SIZE - rec_size//2, rec_size, rec_size))
+    def reverseTurn(self, turn):  # 进入下一回合，交换下棋人
+        if turn == MAP_ENTRY_TYPE.MAP_PLAYER_ONE:
+            return MAP_ENTRY_TYPE.MAP_PLAYER_TWO
+        else:
+            return MAP_ENTRY_TYPE.MAP_PLAYER_ONE
+
+    def getMapUnitRect(self, x, y):  # 输入下标，返回具体位置
+        map_x = x * REC_SIZE
+        map_y = y * REC_SIZE
+
+        return (map_x, map_y, REC_SIZE, REC_SIZE)  # 返回位置信息
+
+    def MapPosToIndex(self, map_x, map_y):  # 输入具体位置，返回下标
+        x = map_x // REC_SIZE
+        y = map_y // REC_SIZE
+        return (x, y)
+
+    def isInMap(self, map_x, map_y):  # 是否在有效范围内
+        if (map_x <= 0 or map_x >= MAP_WIDTH or
+                map_y <= 0 or map_y >= MAP_HEIGHT):
+            return False
+        return True
+
+    def isEmpty(self, x, y):  # 当前格子是否已经有棋子
+        return (self.map[y][x] == 0)
+
+    def click(self, x, y, type):  # 点击的下棋动作
+        self.map[y][x] = type.value  # 下棋
+        self.steps.append((x, y))  # 记录步骤信息
+
+    def drawChess(self, screen):  # 绘制棋子
+        player_one = (255, 251, 240)
+        player_two = (88, 87, 86)
+        player_color = [player_one, player_two]
+
+        font = pygame.font.SysFont(None, REC_SIZE*2//3)
+        for i in range(len(self.steps)):
+            x, y = self.steps[i]
+            map_x, map_y, width, height = self.getMapUnitRect(x, y)
+            pos, radius = (map_x + width//2, map_y + height//2), CHESS_RADIUS
+            turn = self.map[y][x]
+            if turn == 1:
+                op_turn = 2
+            else:
+                op_turn = 1
+            pygame.draw.circle(screen, player_color[turn-1], pos, radius)
+
+            msg_image = font.render(
+                str(i), True, player_color[op_turn-1], player_color[turn-1])
+            msg_image_rect = msg_image.get_rect()
+            msg_image_rect.center = pos
+            screen.blit(msg_image, msg_image_rect)
+
+        if len(self.steps) > 0:
+            last_pos = self.steps[-1]
+            map_x, map_y, width, height = self.getMapUnitRect(
+                last_pos[0], last_pos[1])
+            purple_color = (255, 0, 255)
+            point_list = [(map_x, map_y), (map_x + width, map_y),
+                          (map_x + width, map_y + height), (map_x, map_y + height)]
+            pygame.draw.lines(screen, purple_color, True, point_list, 1)
+
+    def drawBackground(self, screen):  # 画棋盘
+
+        color = (0, 0, 0)
+        for y in range(self.height):
+            # 画线
+            start_pos, end_pos = (REC_SIZE//2, REC_SIZE//2 + REC_SIZE *
+                                  y), (MAP_WIDTH - REC_SIZE//2, REC_SIZE//2 + REC_SIZE * y)
+            if y == (self.height)//2:
+                width = 2
+            else:
+                width = 1
+            pygame.draw.line(screen, color, start_pos, end_pos, width)
+
+        for x in range(self.width):
+            # 画线
+            start_pos, end_pos = (REC_SIZE//2 + REC_SIZE * x, REC_SIZE //
+                                  2), (REC_SIZE//2 + REC_SIZE * x, MAP_HEIGHT - REC_SIZE//2)
+            if x == (self.width)//2:
+                width = 2
+            else:
+                width = 1
+            pygame.draw.line(screen, color, start_pos, end_pos, width)
+
+        rec_size = 8
+        pos = [(3, 3), (11, 3), (3, 11), (11, 11), (7, 7)]
+        for (x, y) in pos:
+            pygame.draw.rect(screen, color, (REC_SIZE//2 + x * REC_SIZE - rec_size //
+                             2, REC_SIZE//2 + y * REC_SIZE - rec_size//2, rec_size, rec_size))
+        # 绘制棋盘坐标
+        NUMBER = (0, 0, 0)
+        number_font = pygame.font.SysFont('Verdana', 15)
+        number = number_font.render(
+            "0         1        2        3        4        5        6        7        8        9       10      11      12      13      14", True, NUMBER)
+        screen.blit(number, (13, 6))
+        number = number_font.render('1', True, NUMBER)
+        screen.blit(number, (13, 65))
+        number = number_font.render('2', True, NUMBER)
+        screen.blit(number, (13, 115))
+        number = number_font.render('3', True, NUMBER)
+        screen.blit(number, (13, 165))
+        number = number_font.render('4', True, NUMBER)
+        screen.blit(number, (13, 215))
+        number = number_font.render('5', True, NUMBER)
+        screen.blit(number, (13, 265))
+        number = number_font.render('6', True, NUMBER)
+        screen.blit(number, (13, 315))
+        number = number_font.render('7', True, NUMBER)
+        screen.blit(number, (13, 365))
+        number = number_font.render('8', True, NUMBER)
+        screen.blit(number, (13, 415))
+        number = number_font.render('9', True, NUMBER)
+        screen.blit(number, (13, 465))
+        number = number_font.render('10', True, NUMBER)
+        screen.blit(number, (5, 515))
+        number = number_font.render('11', True, NUMBER)
+        screen.blit(number, (5, 565))
+        number = number_font.render('12', True, NUMBER)
+        screen.blit(number, (5, 615))
+        number = number_font.render('13', True, NUMBER)
+        screen.blit(number, (5, 665))
+        number = number_font.render('14', True, NUMBER)
+        screen.blit(number, (5, 715))

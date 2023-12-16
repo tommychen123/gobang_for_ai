@@ -1,9 +1,7 @@
-# 五子棋类
-#
-# 完成了五子棋的各项基本操作，包括落子、判胜、
-# 棋盘状态更新、获取等功能
-#
-# 王欣哲 2020/12/5
+'''
+    功能：
+        完成了五子棋的各项基本操作，包括落子、判胜、棋盘状态更新、获取等功能
+'''
 
 import numpy as np
 
@@ -78,6 +76,7 @@ class ChessBoard(object):
         else:  # 有胜利方
             return self.board, self.win_reward, True, {}
 
+    # 判断胜利
     def judge_Win(self):
         x = 0
         y = 0
