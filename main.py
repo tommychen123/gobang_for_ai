@@ -1,3 +1,5 @@
+#作者：陈冠旭 朱奕坤 张方杰 吕泓泰
+#项目：基于人工智能原理的五子棋及其拓展
 import pygame
 from tkinter import messagebox
 from pygame.locals import *

@@ -174,7 +174,7 @@ class MyMnistWindow(QWidget):
             # feed_dict输入数据给placeholder占位符
             predint = prediction.eval(
                 feed_dict={x: [tva], keep_prob: 1.0}, session=sess)
-            print(predint[0])
+            #print(predint[0])
         return predint[0]
 
 

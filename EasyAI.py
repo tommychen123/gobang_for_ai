@@ -1,4 +1,4 @@
-# 五子棋AI
+# 绠�鍗曠殑浜斿瓙妫婣I
 from GameMap import *
 from enum import IntEnum
 import copy
@@ -47,7 +47,7 @@ class EasyAI():
     def isWin(self, board, turn):
         return self.evaluate(board, turn, True)
 
-    def genmove(self, board, turn):  # 获取所有空位
+    def genmove(self, board, turn):  # 禄帽脠隆脣霉脫脨驴脮脦禄
         moves = []
         for y in range(self.len):
             for x in range(self.len):
@@ -58,7 +58,7 @@ class EasyAI():
         moves.sort(reverse=True)
         return moves
 
-    def search(self, board, turn):  # 搜索最佳落子位置
+    def search(self, board, turn):  # 脣脩脣梅脳卯录脩脗盲脳脫脦禄脰脙
         moves = self.genmove(board, turn)
         bestmove = None
         max_score = -0x7fffffff
@@ -80,7 +80,7 @@ class EasyAI():
               ((time2-time1), x, y, score, self.save_count))
         return (x, y)
 
-    def getScore(self, mine_count, opponent_count):    # 计算分数
+    def getScore(self, mine_count, opponent_count):    # 录脝脣茫路脰脢媒
         mscore, oscore = 0, 0
         if mine_count[FIVE] > 0:
             return (10000, 0)
@@ -162,7 +162,7 @@ class EasyAI():
             return (mscore - oscore)
 
     def evaluatePoint(self, board, x, y, mine, opponent):
-        # 方向：从左到右
+        # 路陆脧貌拢潞麓脫脳贸碌陆脫脪
         dir_offset = [(1, 0), (0, 1), (1, 1), (1, -1)]
         for i in range(4):
             if self.record[y][x][i] == 0:
@@ -181,7 +181,7 @@ class EasyAI():
             tmp_y += dir_offset[1]
             if (tmp_x < 0 or tmp_x >= self.len or
                     tmp_y < 0 or tmp_y >= self.len):
-                line[i] = opponent  # 排除对手棋子
+                line[i] = opponent  # 脜脜鲁媒露脭脢脰脝氓脳脫
             else:
                 line[i] = board[tmp_y][tmp_x]
 
@@ -229,7 +229,7 @@ class EasyAI():
 
         m_range = right_idx - left_idx + 1
 
-        # 后为棋局分析：分别针对四连珠、三连珠等情况
+        # 潞贸脦陋脝氓戮脰路脰脦枚拢潞路脰卤冒脮毛露脭脣脛脕卢脰茅隆垄脠媒脕卢脰茅碌脠脟茅驴枚
         if m_range == 5:
             count[FIVE] += 1
 

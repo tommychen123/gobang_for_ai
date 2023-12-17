@@ -8,7 +8,7 @@ from enum import IntEnum
 import pygame
 pygame.init()
 
-GAME_VERSION = 'V1.0'
+GAME_VERSION = 'V2.0'
 
 # 基础参数设置
 REC_SIZE = 50

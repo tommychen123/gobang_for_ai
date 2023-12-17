@@ -1,7 +1,4 @@
-'''
-    功能：
-        将棋盘状态转换为可供模型分析的状态
-'''
+#功能： 将棋盘状态转换为可供模型分析的状态
 
 from ChessBoard import ChessBoard
 import os

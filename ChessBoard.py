@@ -66,11 +66,6 @@ class ChessBoard(object):
         self.turn = self.turn ^ 1  # 更换落子方
         self.premove = (x, y)
         winner = self.judge_Win()
-
-        """
-            这里需要格外注意!!   原代码这里说明的不清晰
-            True、False到底代表对局结束还是没结束
-        """
         if winner == self.EMPTY:  # 没有胜利方
             return self.board, self.draw_reward, False, {}
         else:  # 有胜利方
